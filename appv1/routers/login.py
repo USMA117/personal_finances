@@ -1,4 +1,5 @@
 from typing import Annotated, List
+from appv1.crud.permissions import get_all_permissions
 from appv1.crud.users import create_user_sql, delete_user, get_all_users, get_all_users_paginated, get_user_by_email, get_user_by_id, update_user
 from appv1.schemas.user import ResponseLoggin, UserCreate, UserLoggin,UserResponse,UserUpdate,PaginatedUsersResponse
 from fastapi import APIRouter,Depends, HTTPException # type: ignore
@@ -69,6 +70,8 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.user_id, "rol":user.user_role}
     )
+    permisos = get_all_permissions(db,user.user_role)
+    
     return ResponseLoggin(
         user=UserLoggin(
             user_id=user.user_id,
@@ -76,5 +79,6 @@ async def login_for_access_token(
             mail=user.mail,
             user_role=user.user_role
         ),
+        permissions= permisos,
         access_token = access_token
     )
