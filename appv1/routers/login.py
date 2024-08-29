@@ -60,18 +60,19 @@ async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db)
 ):
-    user = authenticate_user( form_data.username, form_data.password, db)
+    user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(
             status_code=401,
-            detail="Datos incorrectos en email o password",
+            detail="Datos Incorrectos en email o password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = create_access_token(
         data={"sub": user.user_id, "rol":user.user_role}
     )
-    permisos = get_all_permissions(db,user.user_role)
-    
+
+    permisos = get_all_permissions(db, user.user_role)
+
     return ResponseLoggin(
         user=UserLoggin(
             user_id=user.user_id,
@@ -79,6 +80,16 @@ async def login_for_access_token(
             mail=user.mail,
             user_role=user.user_role
         ),
-        permissions= permisos,
-        access_token = access_token
+        permissions=permisos,
+        access_token=access_token
     )
+
+@router.post("/register")
+async def register_user(
+    user: UserCreate,
+    db: Session = Depends(get_db)
+):
+    user.user_role = 'Cliente'
+    respuesta = create_user_sql(db, user)
+    if respuesta:
+        return {"mensaje":"usuario registrado con éxito"}
