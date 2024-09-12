@@ -1,10 +1,13 @@
 # from appv1.schemas.user import UserCreate
 from fastapi import FastAPI # type: ignore
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from db.database import test_db_connection
 from appv1.routers import category, login, roles, users
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(roles.router, prefix="/role", tags=["role"])

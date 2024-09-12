@@ -14,11 +14,11 @@ def get_user_by_id(db: Session, user_id: str):
     return result
 
 # Crear un usuario
-def create_user_sql(db: Session, user:UserCreate):
+def create_user_sql(db: Session, user:UserCreate, image_user:str):
     try:
         sql_query = text(
-            "INSERT INTO users (user_id, full_name, mail, passhash, user_role) "
-            "VALUES (:user_id, :full_name, :mail, :passhash, :user_role)"
+            "INSERT INTO users (user_id, full_name, mail, passhash, user_role, img_profile) "
+            "VALUES (:user_id, :full_name, :mail, :passhash, :user_role, :img_profile)"
         )
         params = {
             "user_id": generate_user_id(),
@@ -26,6 +26,7 @@ def create_user_sql(db: Session, user:UserCreate):
             "mail": user.mail,
             "passhash": get_hashed_password(user.passhash),
             "user_role": user.user_role,
+            "img_profile": image_user
         }
         db.execute(sql_query, params)
         db.commit()
@@ -167,3 +168,21 @@ def delete_user(db: Session, user_id: str):
         db.rollback()  
         print(f"Error al eliminar usuario: {e}")
         raise HTTPException(status_code=500, detail="Error al eliminar usuario")
+    
+def update_password(db: Session, email: str, new_password: str):
+    try:
+        # Hash el nuevo password
+        hashed_password = get_hashed_password(new_password)
+        # Actualizar el nuevo password en base de datos
+        sql_query = text("UPDATE users SET passhash = :passhash WHERE mail = :mail")
+        params = { "passhash": hashed_password, "mail": email }
+        # Ejecutar la consulta de actualización
+        db.execute(sql_query, params)
+        # Confirmar los cambios
+        db.commit()
+        return True
+
+    except SQLAlchemyError as e:
+        db.rollback()  # Deshacer los cambios si ocurre un error
+        print(f"Error al actualizar password: {e}")
+        raise HTTPException(status_code=500, detail="Error al actualizar password")

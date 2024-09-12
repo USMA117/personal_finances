@@ -59,6 +59,8 @@ CREATE TABLE users (
     FOREIGN KEY (user_role) REFERENCES roles (rol_name)
 );
 
+ALTER TABLE users ADD img_profile VARCHAR(180) AFTER user_status;
+
 CREATE TABLE category (
     category_id SMALLINT(3) AUTO_INCREMENT PRIMARY KEY,
     category_name VARCHAR(50),
